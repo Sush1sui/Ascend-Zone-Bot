@@ -1,0 +1,26 @@
+{
+    "name": "cooking-something",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "ts-node src/index.ts",
+        "build": "tsc",
+        "serve": "node dist/index.js"
+    },
+    "author": "Sush1sui",
+    "license": "ISC",
+    "dependencies": {
+        "discord.js": "^14.16.2",
+        "dotenv": "^16.4.5",
+        "express": "^4.19.2",
+        "node-fetch": "2.7"
+    },
+    "devDependencies": {
+        "@types/express": "^4.17.21",
+        "@types/node": "^18.16.0",
+        "@types/node-fetch": "^2.6.11",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.6.2"
+    }
+}
