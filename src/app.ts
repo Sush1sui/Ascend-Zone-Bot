@@ -84,10 +84,12 @@ export function startBot() {
         const filePath = path.join(eventsPath, file);
         const event = require(filePath);
         if (event.default.once) {
+            console.log(event.default.name);
             client.once(event.default.name, (...args) =>
                 event.default.execute(...args)
             );
         } else {
+            console.log(event.default.name);
             client.on(event.default.name, (...args) =>
                 event.default.execute(...args)
             );

@@ -51,7 +51,7 @@ export default {
         const channel = interaction.options.getChannel("channel");
 
         const embedMessage = new EmbedBuilder()
-            .setTitle("Welcome to Ascend Zone")
+            .setTitle("Welcome to Ascend Zone!")
             .setColor(0x008000)
             .setDescription(
                 "To continue on with your adventure to this Fantastic Community, Please do verify your account first to have a access of all channels."
