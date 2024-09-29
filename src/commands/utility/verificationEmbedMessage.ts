@@ -14,6 +14,7 @@ import {
     setVerificationMessageID,
     setVerificationStatus,
 } from "../../modules/Verification";
+import { verifiedRoleIDs } from "../../app";
 
 export default {
     data: new SlashCommandBuilder()
@@ -81,14 +82,6 @@ export default {
                 // Check if it's the right button
                 if (buttonInteraction.customId !== "verify_button") return;
 
-                // Proceed with role assignment
-                const roleIds = [
-                    "967418794807033906",
-                    "1181608321002782780",
-                    "1181609832457973810",
-                    "1181610191792381962",
-                ];
-
                 const member = buttonInteraction.member;
                 if (!member || !interaction.guild) {
                     await buttonInteraction.reply({
@@ -99,7 +92,7 @@ export default {
                 }
 
                 try {
-                    const roles = roleIds
+                    const roles = verifiedRoleIDs
                         .map((roleId) =>
                             interaction.guild?.roles.cache.get(roleId)
                         )

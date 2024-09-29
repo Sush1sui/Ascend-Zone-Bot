@@ -9,6 +9,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { CustomClient } from "./Types";
 
+export const verifiedRoleIDs = [
+    "967418794807033906",
+    "1181608321002782780",
+    "1181609832457973810",
+    "1181610191792381962",
+];
+
 export function startBot() {
     const client = new Client({
         intents: [

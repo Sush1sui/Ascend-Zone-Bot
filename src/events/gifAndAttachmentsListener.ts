@@ -24,35 +24,29 @@ export default {
     once: false,
     async execute(message: Message): Promise<void> {
         try {
-            // Ignore messages sent by bots
-            if (message.author.bot) return;
+            // Ignore messages sent by bots or in exception channels
+            if (
+                message.author.bot ||
+                CHANNEL_EXCEPTION.includes(message.channel.id)
+            )
+                return;
 
-            // Check if the message channel is in the exception list
-            if (CHANNEL_EXCEPTION.includes(message.channel.id)) return;
-
-            // Get the member who sent the message
             const member = message.member as GuildMember;
             if (!member) return;
 
-            // Check if the member has the staff, booster, or custom role pass
             const hasAuthorizedRole =
                 member.roles.cache.has(staff_id) ||
                 member.roles.cache.has(booster_id) ||
                 member.roles.cache.has(custom_role_pass_id);
 
-            // If the member has any of the authorized roles, we don't delete their messages
             if (hasAuthorizedRole) return;
 
-            // Check for attachments (images, videos, or files)
             const hasAttachments = message.attachments.size > 0;
-
-            // Check for GIFs or links in the message content
             const hasGIFsOrLinks =
                 /https?:\/\/\S+\.(gif|jpg|jpeg|png|mp4|webm|mov|avi|mkv)|https?:\/\/tenor.com\/view\/\S+/i.test(
                     message.content
                 );
 
-            // If the message contains attachments or GIFs/links, delete it
             if (hasAttachments || hasGIFsOrLinks) {
                 await message.delete();
                 console.log(

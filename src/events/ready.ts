@@ -4,6 +4,7 @@ import {
     getVerificationChannelID,
     getVerificationMessageID,
 } from "../modules/Verification";
+import { verifiedRoleIDs } from "../app";
 
 // event handler for making bot online
 export default {
@@ -41,13 +42,6 @@ export default {
                         if (buttonInteraction.customId !== "verify_button")
                             return;
 
-                        const roleIds = [
-                            "967418794807033906",
-                            "1181608321002782780",
-                            "1181609832457973810",
-                            "1181610191792381962",
-                        ];
-
                         const member = buttonInteraction.member;
                         if (!member || !buttonInteraction.guild) {
                             await buttonInteraction.reply({
@@ -59,7 +53,7 @@ export default {
                         }
 
                         try {
-                            const roles = roleIds
+                            const roles = verifiedRoleIDs
                                 .map((roleId) =>
                                     buttonInteraction.guild?.roles.cache.get(
                                         roleId

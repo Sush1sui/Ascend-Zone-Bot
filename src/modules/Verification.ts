@@ -23,9 +23,7 @@ async function initializeVerification() {
             verificationMessageID: null,
         });
         await verificationMessage.save();
-        return verificationMessage.verificationMessagePresent;
     }
-    return existingVerificationMessage;
 }
 
 export async function setVerificationStatus(value: boolean) {
@@ -39,9 +37,7 @@ export async function setVerificationStatus(value: boolean) {
             verificationMessageID:
                 existingVerificationMessage.verificationMessageID,
         });
-        return existingVerificationMessage.verificationMessagePresent;
     }
-    return null;
 }
 
 export async function getVerificationChannelID() {
@@ -74,9 +70,7 @@ export async function setVerificationChannelID(
             verificationMessagePresent:
                 existingVerificationMessage.verificationMessagePresent,
         });
-        return existingVerificationMessage;
     }
-    return null;
 }
 
 export async function setVerificationMessageID(
@@ -94,7 +88,6 @@ export async function setVerificationMessageID(
                 existingVerificationMessage.verificationMessagePresent,
         });
     }
-    return null;
 }
 
 export async function getVerificationMessageStatus() {
