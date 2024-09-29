@@ -9,6 +9,16 @@ if (!staff_id || !booster_id || !custom_role_pass_id)
         "Staff or Booster role ID is not defined in environment variables."
     );
 
+const CHANNEL_EXCEPTION = [
+    "972883934281101392",
+    "1140719367366123541",
+    "1274400505744855142",
+    "1149557123999604867",
+    "1152225163698516050",
+    "1157929158026993745",
+    "967416435410337847",
+];
+
 export default {
     name: "messageCreate",
     once: false,
@@ -16,6 +26,9 @@ export default {
         try {
             // Ignore messages sent by bots
             if (message.author.bot) return;
+
+            // Check if the message channel is in the exception list
+            if (CHANNEL_EXCEPTION.includes(message.channel.id)) return;
 
             // Get the member who sent the message
             const member = message.member as GuildMember;
