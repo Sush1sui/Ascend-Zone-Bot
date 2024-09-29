@@ -13,7 +13,7 @@ import {
     setVerificationChannelID,
     setVerificationMessageID,
     setVerificationStatus,
-} from "../../app";
+} from "../../modules/Verification";
 
 export default {
     data: new SlashCommandBuilder()
@@ -38,7 +38,7 @@ export default {
             return;
         }
 
-        if (getVerificationMessageStatus() === true) {
+        if ((await getVerificationMessageStatus()) === true) {
             await interaction.reply({
                 content: "There is already an existing verification message",
                 ephemeral: true,
@@ -132,9 +132,9 @@ export default {
                 content: "The verification message has been sent successfully!",
             });
 
-            setVerificationChannelID(channel?.id);
-            setVerificationMessageID(message?.id);
-            setVerificationStatus(true);
+            await setVerificationChannelID(channel?.id);
+            await setVerificationMessageID(message.id);
+            await setVerificationStatus(true);
         } catch (error) {
             const errorMessage = (error as Error).message;
             await interaction.editReply({

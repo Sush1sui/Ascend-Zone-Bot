@@ -11,7 +11,7 @@ import {
     setVerificationChannelID,
     setVerificationMessageID,
     setVerificationStatus,
-} from "../../app";
+} from "../../modules/Verification";
 
 export default {
     data: new SlashCommandBuilder()
@@ -34,7 +34,8 @@ export default {
             return;
         }
 
-        if (getVerificationMessageStatus() === false) {
+        const verificationMessageStatus = await getVerificationMessageStatus();
+        if (verificationMessageStatus === false) {
             await interaction.reply({
                 content: "There is no verification message active",
                 ephemeral: true,
@@ -44,9 +45,9 @@ export default {
 
         await interaction.deferReply({ ephemeral: true });
 
-        const channelId = getVerificationChannelID();
-        const messageId = getVerificationMessageID();
-        if (!channelId || !messageId) {
+        const channelId = await getVerificationChannelID();
+        const messageId = await getVerificationMessageID();
+        if (channelId === null || messageId === null) {
             await interaction.followUp({
                 content: "Unable to retrieve channel or message ID.",
                 ephemeral: true,
@@ -76,9 +77,9 @@ export default {
                     ephemeral: true,
                 });
 
-                setVerificationStatus(false);
-                setVerificationChannelID(null);
-                setVerificationMessageID(null);
+                await setVerificationStatus(false);
+                await setVerificationChannelID(null);
+                await setVerificationMessageID(null);
             } else {
                 await interaction.followUp({
                     content: "No message found with the specified ID.",

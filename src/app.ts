@@ -9,37 +9,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { CustomClient } from "./Types";
 
-let verificationMessagePresent = false;
-let verificationMessageID: null | string | undefined = null;
-let verificationChannelID: null | string | undefined = null;
-
-export function setVerificationStatus(value: boolean) {
-    verificationMessagePresent = value;
-    return verificationMessagePresent;
-}
-
-export function getVerificationChannelID() {
-    return verificationChannelID;
-}
-
-export function getVerificationMessageID() {
-    return verificationMessageID;
-}
-
-export function setVerificationChannelID(value: string | null | undefined) {
-    verificationChannelID = value;
-    return verificationChannelID;
-}
-
-export function setVerificationMessageID(value: string | null | undefined) {
-    verificationMessageID = value;
-    return verificationMessageID;
-}
-
-export function getVerificationMessageStatus() {
-    return verificationMessagePresent;
-}
-
 export function startBot() {
     const client = new Client({
         intents: [
@@ -84,12 +53,10 @@ export function startBot() {
         const filePath = path.join(eventsPath, file);
         const event = require(filePath);
         if (event.default.once) {
-            console.log(event.default.name);
             client.once(event.default.name, (...args) =>
                 event.default.execute(...args)
             );
         } else {
-            console.log(event.default.name);
             client.on(event.default.name, (...args) =>
                 event.default.execute(...args)
             );
