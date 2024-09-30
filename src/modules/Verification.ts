@@ -1,19 +1,6 @@
-import mongoose from "mongoose";
-import "dotenv/config";
 import Verification from "../Models/Verification.model";
 
-const uri = process.env.DB_CONNECTION_STRING;
-if (!uri) throw new Error("No connection string");
-
-mongoose
-    .connect(uri)
-    .then(() => {
-        initializeVerification();
-        console.log("Connected to DB");
-    })
-    .catch((e) => console.log(e));
-
-async function initializeVerification() {
+export async function initializeVerification() {
     const existingVerificationMessage = await Verification.findOne({});
 
     if (existingVerificationMessage === null) {

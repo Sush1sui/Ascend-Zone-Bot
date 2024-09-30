@@ -1,20 +1,7 @@
-import mongoose from "mongoose";
-import "dotenv/config";
 import StickyChannel from "../Models/StickyChannel.model";
 import { STICKY_CHANNELS } from "../events/stickyMessage";
 
-const uri = process.env.DB_CONNECTION_STRING;
-if (!uri) throw new Error("No connection string");
-
-mongoose
-    .connect(uri)
-    .then(() => {
-        initializeStickyMessages();
-        console.log("Connected to DB");
-    })
-    .catch((e) => console.log(e));
-
-async function initializeStickyMessages() {
+export async function initializeStickyMessages() {
     try {
         // Check if there are any existing sticky channels in the database
         const existingChannels = await StickyChannel.find();
