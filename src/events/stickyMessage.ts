@@ -58,7 +58,7 @@ export default {
 
                     // Send the new sticky message and store its ID in the database
                     const newStickyMessage = await message.channel.send(
-                        "__**Stickied Message**__\n\nKindly avoid chatting or flood replies. Just use the **Thread** to avoid spamming or you will be **Timed out**"
+                        "__**Stickied Message:**__\n\nKindly avoid chatting or flood replies. Just use the **Thread** to avoid spamming or you will be **Timed out**"
                     );
 
                     // Update both recent and sticky message IDs
