@@ -17,10 +17,7 @@ export async function initializeStickyMessages() {
             await StickyChannel.insertMany(stickyChannelEntries);
             console.log("Initialized sticky channels:", stickyChannelEntries);
         } else {
-            console.log(
-                "Sticky channels already initialized:",
-                existingChannels
-            );
+            console.log("Sticky channels already initialized");
         }
     } catch (error) {
         console.error("Error initializing sticky messages:", error);
