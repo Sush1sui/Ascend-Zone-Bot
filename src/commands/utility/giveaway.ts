@@ -188,6 +188,7 @@ export default {
             let participants: string[] = [];
 
             collector.on("collect", (reaction, user) => {
+                console.log(reaction);
                 console.log(`Reaction collected from ${user.username}`);
                 if (!user.bot && !participants.includes(user.id)) {
                     participants.push(user.id);
