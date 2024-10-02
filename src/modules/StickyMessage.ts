@@ -1,10 +1,11 @@
 import StickyChannel from "../Models/StickyChannel.model";
-import { STICKY_CHANNELS } from "../events/stickyMessage";
 
 export async function initializeStickyMessages() {
     try {
         // Check if there are any existing sticky channels in the database
         const existingChannels = await StickyChannel.find();
+
+        const STICKY_CHANNELS = await getAllStickyMessageChannelID();
 
         // If no channels exist, insert the predefined CHANNELS
         if (existingChannels.length === 0) {
@@ -21,6 +22,62 @@ export async function initializeStickyMessages() {
         }
     } catch (error) {
         console.error("Error initializing sticky messages:", error);
+    }
+}
+
+export async function addStickyMessage(channelId: string) {
+    try {
+        const existingChannel = await StickyChannel.find({ channelId });
+        if (existingChannel.length > 0)
+            throw new Error(
+                `Channel: ${channelId} is already set to have sticky message`
+            );
+
+        const stickyChannel = await StickyChannel.create({
+            channelId,
+            recentPostMessageId: null,
+            stickyMessageId: null,
+        });
+        console.log(
+            `Sticky Message for channel: ${stickyChannel.channelId} has been set`
+        );
+        return true;
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+}
+
+export async function deleteStickyMessage(channelId: string) {
+    try {
+        const deletedStickyChannel = await StickyChannel.findOneAndDelete({
+            channelId,
+        });
+        if (!deleteStickyMessage) {
+            return "sticky not found";
+        }
+        console.log(
+            `Sticky Message has been unset for channel ${deletedStickyChannel?.channelId}`
+        );
+        return "success";
+    } catch (error) {
+        console.log(error);
+        return "error";
+    }
+}
+
+export async function getAllStickyMessageChannelID() {
+    try {
+        const stickyChannels = await StickyChannel.find();
+        const arr: string[] = [];
+
+        for (const s of stickyChannels) {
+            arr.push(s.channelId);
+        }
+        return arr;
+    } catch (error) {
+        console.log(error);
+        return [];
     }
 }
 
@@ -87,5 +144,14 @@ export async function setStickyMessage_MID(
     } catch (error) {
         console.error("Error updating sticky and recent message IDs:", error);
         throw error; // Rethrow the error for further handling if needed
+    }
+}
+
+export async function getAllStickyMessage() {
+    try {
+        return await StickyChannel.find();
+    } catch (error) {
+        console.log(error);
+        return [];
     }
 }

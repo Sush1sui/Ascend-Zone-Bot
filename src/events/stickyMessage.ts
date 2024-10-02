@@ -1,17 +1,9 @@
 import { GuildMember, Message, TextChannel } from "discord.js";
 import {
+    getAllStickyMessageChannelID,
     getStickyMessage_MID,
     setStickyMessage_MID,
 } from "../modules/StickyMessage";
-
-export const STICKY_CHANNELS = [
-    "1140719367366123541",
-    "967416435410337847",
-    "1157929158026993745",
-    "1274400505744855142",
-    "1149557123999604867",
-    "1140718990495326339",
-];
 
 export default {
     name: "messageCreate",
@@ -21,6 +13,8 @@ export default {
             if (message.author.bot) return;
 
             if (!(message.member as GuildMember)) return;
+
+            const STICKY_CHANNELS = await getAllStickyMessageChannelID();
 
             // Check if the message was sent in a sticky channel
             if (STICKY_CHANNELS.includes(message.channel.id)) {
