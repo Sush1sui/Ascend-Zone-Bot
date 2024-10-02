@@ -10,7 +10,8 @@ export async function initializeGiveawayTimeouts(client: Client) {
 
         // Iterate through each active giveaway
         for (const giveaway of activeGiveaways) {
-            const { channelId, messageId, winnerCount, deadline } = giveaway;
+            const { channelId, messageId, prize, winnerCount, deadline } =
+                giveaway;
             const channel = (await client.channels.fetch(
                 channelId
             )) as TextChannel;
@@ -26,7 +27,20 @@ export async function initializeGiveawayTimeouts(client: Client) {
                 console.log(
                     `Giveaway with message ID ${messageId} has already ended.`
                 );
+                const endEmbed = new EmbedBuilder()
+                    .setTitle("GIVEAWAY ENDED")
+                    .setDescription(
+                        `Giveaway with prize: \`${prize}\` has already ended`
+                    )
+                    .setColor("DarkOrange");
+
+                await channel.send({
+                    content: "<@&967418794807033906>",
+                    allowedMentions: { parse: ["roles"] },
+                    embeds: [endEmbed],
+                });
                 await deleteGiveaway(channelId, messageId);
+                console.log(`Deleted ended giveaway: ${messageId}`);
                 continue;
             }
 
@@ -48,16 +62,24 @@ export async function initializeGiveawayTimeouts(client: Client) {
 
                     if (reaction) {
                         const users = await reaction.users.fetch();
-                        console.log(users);
                         participants = users
                             .filter((user) => !user.bot)
                             .map((user) => user.id);
                     }
 
                     if (participants.length === 0) {
-                        await channel.send(
-                            "No participants entered the giveaway."
-                        );
+                        const endEmbed = new EmbedBuilder()
+                            .setTitle("GIVEAWAY ENDED")
+                            .setDescription(
+                                `No participants entered the giveaway for prize: \`${prize}\``
+                            )
+                            .setColor("DarkBlue");
+
+                        await channel.send({
+                            content: "<@&967418794807033906>",
+                            allowedMentions: { parse: ["roles"] },
+                            embeds: [endEmbed],
+                        });
                     } else {
                         const winners = selectRandomWinners(
                             participants,
@@ -69,10 +91,13 @@ export async function initializeGiveawayTimeouts(client: Client) {
 
                         const endEmbed = new EmbedBuilder()
                             .setTitle("GIVEAWAY ENDED")
-                            .setDescription(`Winners: ${winnersString}`)
+                            .setDescription(
+                                `Prize: \`${prize}\`\n\nWinners: ${winnersString}`
+                            )
                             .setColor("Green");
 
                         await channel.send({
+                            content: "<@&967418794807033906>",
                             allowedMentions: { parse: ["roles"] },
                             embeds: [endEmbed],
                         });
@@ -88,6 +113,7 @@ export async function initializeGiveawayTimeouts(client: Client) {
                 }
             }, timeLeft);
         }
+        console.log("On-going giveaways has been initialized");
     } catch (error) {
         console.error("Error initializing giveaway timeouts:", error);
     }
@@ -143,7 +169,6 @@ export async function deleteGiveaway(channelId: string, messageId: string) {
             channelId,
             messageId,
         });
-        console.log("Deleted giveaway: ", giveaway);
         if (!giveaway) throw new Error("No giveaway found");
         return true;
     } catch (error) {

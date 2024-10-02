@@ -5,12 +5,9 @@ import {
     PermissionFlagsBits,
     SlashCommandBuilder,
     TextChannel,
-    MessageReaction,
-    User,
 } from "discord.js";
 import {
     deleteGiveaway,
-    getGiveawayStatus,
     selectRandomWinners,
     setGiveaway,
 } from "../../modules/Giveaway";
@@ -86,7 +83,9 @@ export default {
 
         await interaction.deferReply({ ephemeral: true });
 
-        const channel = interaction.options.getChannel("channel");
+        const channel = interaction.options.getChannel(
+            "channel"
+        ) as TextChannel;
         const prize = interaction.options.getString("prize");
         const winnerCount = interaction.options.getInteger("winner_count");
         const dayCount = interaction.options.getInteger("day_count") || 0;
@@ -146,11 +145,12 @@ export default {
             const embed = new EmbedBuilder()
                 .setTitle("GIVEAWAY")
                 .setDescription(
-                    `**\nPrize: \`${prize}\`**\n\n**Giveaway ends at:** \`${formattedDeadline}\``
+                    `**Prize: \`${prize}\`**\n\n**Giveaway ends at:** \`${formattedDeadline}\`\n\n\`React "🎉" to join giveaway\``
                 )
                 .setColor("White");
 
-            const message = await (channel as TextChannel).send({
+            const message = await channel.send({
+                content: "<@&967418794807033906>",
                 allowedMentions: { parse: ["roles"] },
                 embeds: [embed],
             });
@@ -170,61 +170,89 @@ export default {
                 content: `Giveaway was sent to ${channel}`,
             });
 
-            // Start the reaction collector
-            const filter = (reaction: MessageReaction, user: User) => {
-                console.log(reaction);
-                console.log(user);
-                return !user.bot && reaction.emoji.name === "🎉"; // Exclude bot reactions and only allow the specified emoji
-            };
+            const timeLeft = deadline.getTime() - Date.now();
 
-            const collector = message.createReactionCollector({
-                filter,
-                time: deadline.getTime() - Date.now(),
-            });
-
-            console.log(collector);
-
-            // Store participants' IDs
-            let participants: string[] = [];
-
-            collector.on("collect", (reaction, user) => {
-                console.log(reaction);
-                console.log(`Reaction collected from ${user.username}`);
-                if (!user.bot && !participants.includes(user.id)) {
-                    participants.push(user.id);
-                    console.log(`${user.username} has entered the giveaway.`);
-                }
-            });
-
-            collector.on("end", async () => {
-                if (participants.length === 0) {
-                    await (channel as TextChannel).send(
-                        "No participants entered the giveaway."
-                    );
-                    return;
-                }
-
-                // Select winners
-                const winners = selectRandomWinners(participants, winnerCount);
-                const winnersString = winners
-                    .map((winnerId) => `<@${winnerId}>`)
-                    .join(", ");
-
-                // Send winners announcement
+            // If the giveaway has already ended, handle it here
+            if (timeLeft <= 0) {
+                console.log(
+                    `Giveaway with message ID ${message.id} has already ended.`
+                );
                 const endEmbed = new EmbedBuilder()
                     .setTitle("GIVEAWAY ENDED")
-                    .setDescription(`Winners: ${winnersString}`)
-                    .setColor("Green");
+                    .setDescription(
+                        `Giveaway with prize: \`${prize}\` has already ended`
+                    )
+                    .setColor("DarkOrange");
 
-                await (channel as TextChannel).send({
+                await channel.send({
+                    content: "<@&967418794807033906>",
                     allowedMentions: { parse: ["roles"] },
                     embeds: [endEmbed],
                 });
                 await deleteGiveaway(channel.id, message.id);
-                console.log("Deleted ended giveaway on DB");
-            });
+                console.log(`Deleted ended giveaway: ${message.id}`);
+                return;
+            }
 
-            console.log(await getGiveawayStatus(channel.id, message.id));
+            // Set a timeout for the giveaway
+            setTimeout(async () => {
+                try {
+                    // Fetch all reactions to find participants
+                    const reaction = message.reactions.cache.get("🎉");
+                    let participants: string[] = [];
+
+                    if (reaction) {
+                        const users = await reaction.users.fetch();
+                        participants = users
+                            .filter((user) => !user.bot)
+                            .map((user) => user.id);
+                    }
+
+                    if (participants.length === 0) {
+                        const endEmbed = new EmbedBuilder()
+                            .setTitle("GIVEAWAY ENDED")
+                            .setDescription(
+                                `No participants entered the giveaway for prize: \`${prize}\``
+                            )
+                            .setColor("DarkBlue");
+
+                        await channel.send({
+                            content: "<@&967418794807033906>",
+                            allowedMentions: { parse: ["roles"] },
+                            embeds: [endEmbed],
+                        });
+                    } else {
+                        const winners = selectRandomWinners(
+                            participants,
+                            winnerCount
+                        );
+                        const winnersString = winners
+                            .map((winnerId) => `<@${winnerId}>`)
+                            .join(", ");
+
+                        const endEmbed = new EmbedBuilder()
+                            .setTitle("GIVEAWAY ENDED")
+                            .setDescription(
+                                `Prize: \`${prize}\`\n\nWinners: ${winnersString}`
+                            )
+                            .setColor("Green");
+
+                        await channel.send({
+                            content: "<@&967418794807033906>",
+                            allowedMentions: { parse: ["roles"] },
+                            embeds: [endEmbed],
+                        });
+                    }
+
+                    await deleteGiveaway(channel.id, message.id);
+                    console.log(`Deleted ended giveaway: ${message.id}`);
+                } catch (error) {
+                    console.error(
+                        `Error handling giveaway end for message ID ${message.id}:`,
+                        error
+                    );
+                }
+            }, timeLeft);
         } catch (error) {
             const errorMessage = (error as Error).message;
             await interaction.editReply({

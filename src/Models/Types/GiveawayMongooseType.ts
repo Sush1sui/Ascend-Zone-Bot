@@ -3,6 +3,7 @@ import { Document, Model } from "mongoose";
 export interface GiveawayType {
     channelId: string;
     messageId: string;
+    prize: string;
     winnerCount: number;
     deadline: Date;
     createdAt?: Date;
