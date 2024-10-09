@@ -49,7 +49,7 @@ export async function initializeVerificationCollector(client: Client) {
                             await buttonInteraction.reply({
                                 content:
                                     "You have been verified and roles have been assigned!\n\n" +
-                                    "Please get your roles here :C_tinyarrow~1: <#969034821177319445>",
+                                    "Please get your roles here <a:C_tinyarrow:1293422953844838503> <#969034821177319445>",
                                 ephemeral: true,
                             });
                         } else {
