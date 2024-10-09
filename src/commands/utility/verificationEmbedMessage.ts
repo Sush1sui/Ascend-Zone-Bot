@@ -102,7 +102,8 @@ export default {
                         await (member as any).roles.add(roles); // Cast member to `GuildMember` to access `roles`
                         await buttonInteraction.reply({
                             content:
-                                "You have been verified and roles have been assigned!",
+                                "You have been verified and roles have been assigned!\n\n" +
+                                "Please get your roles here :C_tinyarrow~1: <#969034821177319445>",
                             ephemeral: true,
                         });
                     } else {
