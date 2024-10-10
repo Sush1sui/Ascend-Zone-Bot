@@ -145,7 +145,7 @@ export default {
             const embed = new EmbedBuilder()
                 .setTitle("GIVEAWAY")
                 .setDescription(
-                    `**Prize: \`${prize}\`**\n\n**Giveaway ends at:** \`${formattedDeadline}\`\n\n\`React "🎉" to join giveaway\``
+                    `**Prize: \`${prize}\`**\n**Number of winners: \`${winnerCount}\`**\n\n**Giveaway ends at:** \`${formattedDeadline}\`\n\n\`React "🎉" to join giveaway\``
                 )
                 .setColor("White");
 
