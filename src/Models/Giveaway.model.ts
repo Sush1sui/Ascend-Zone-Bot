@@ -5,7 +5,6 @@ const giveawaySchema = new mongoose.Schema({
     channelId: {
         type: String,
         required: true,
-        unique: true,
     },
     messageId: {
         type: String,
