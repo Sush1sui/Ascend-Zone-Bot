@@ -7,6 +7,7 @@ import {
     TextChannel,
 } from "discord.js";
 import {
+    createUtcDate,
     deleteGiveaway,
     selectRandomWinners,
     setGiveaway,
@@ -127,25 +128,14 @@ export default {
         }
 
         try {
-            const deadline = new Date();
-            deadline.setDate(deadline.getDate() + dayCount);
-            deadline.setHours(deadline.getHours() + hourCount);
-            deadline.setMinutes(deadline.getMinutes() + minCount);
-
-            const formattedDeadline = deadline.toLocaleString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hour12: true,
-            });
+            // Create a Unix timestamp for the giveaway deadline
+            const deadline = createUtcDate(dayCount, hourCount, minCount);
+            const unixTimestamp = Math.floor(deadline.getTime() / 1000); // Convert to Unix timestamp
 
             const embed = new EmbedBuilder()
                 .setTitle("GIVEAWAY")
                 .setDescription(
-                    `**Prize: \`${prize}\`**\n**Number of winners: \`${winnerCount}\`**\n\n**Giveaway ends at:** \`${formattedDeadline}\`\n\n\`React "🎉" to join giveaway\``
+                    `**Prize: \`${prize}\`**\n**Number of winners: \`${winnerCount}\`**\n\n**Giveaway ends at:** <t:${unixTimestamp}:F>\n\n\`React "🎉" to join giveaway\``
                 )
                 .setColor("White");
 
@@ -158,12 +148,15 @@ export default {
 
             await message.react("🎉");
 
+            // Save giveaway using Unix timestamp
             await setGiveaway(
                 channel.id,
                 message.id,
                 prize,
                 winnerCount,
-                deadline
+                dayCount,
+                hourCount,
+                minCount
             );
             console.log("Giveaway was saved to DB");
             await interaction.editReply({
@@ -172,7 +165,6 @@ export default {
 
             const timeLeft = deadline.getTime() - Date.now();
 
-            // If the giveaway has already ended, handle it here
             if (timeLeft <= 0) {
                 console.log(
                     `Giveaway with message ID ${message.id} has already ended.`
@@ -197,7 +189,6 @@ export default {
             // Set a timeout for the giveaway
             setTimeout(async () => {
                 try {
-                    // Fetch all reactions to find participants
                     const reaction = message.reactions.cache.get("🎉");
                     let participants: string[] = [];
 

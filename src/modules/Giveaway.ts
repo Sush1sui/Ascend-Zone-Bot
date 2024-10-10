@@ -19,103 +19,111 @@ export async function initializeGiveawayTimeouts(client: Client) {
             // If the channel does not exist or is not a TextChannel, skip
             if (!channel || !(channel instanceof TextChannel)) continue;
 
-            const endTime = new Date(deadline).getTime();
+            const endTime = deadline.getTime();
             const timeLeft = endTime - Date.now();
+            console.log(`end time: ${deadline}`);
+            console.log(`time left: ${timeLeft}`);
 
             // If the giveaway has already ended, handle it here
             if (timeLeft <= 0) {
                 console.log(
                     `Giveaway with message ID ${messageId} has already ended.`
                 );
-                const endEmbed = new EmbedBuilder()
-                    .setTitle("GIVEAWAY ENDED")
-                    .setDescription(
-                        `Giveaway with prize: \`${prize}\` has already ended`
-                    )
-                    .setColor("DarkOrange");
-
-                await channel.send({
-                    content: "<@&967418794807033906>",
-                    allowedMentions: { parse: ["roles"] },
-                    embeds: [endEmbed],
-                });
-                await deleteGiveaway(channelId, messageId);
-                console.log(`Deleted ended giveaway: ${messageId}`);
+                await handleGiveawayEnd(channel, messageId, prize, winnerCount);
                 continue;
             }
 
             // Set a timeout for the giveaway
             setTimeout(async () => {
-                try {
-                    const message = await channel.messages.fetch(messageId);
-                    if (!message) {
-                        console.error(
-                            `Message with ID ${messageId} not found.`
-                        );
-                        await deleteGiveaway(channelId, messageId);
-                        return;
-                    }
-
-                    // Fetch all reactions to find participants
-                    const reaction = message.reactions.cache.get("🎉");
-                    let participants: string[] = [];
-
-                    if (reaction) {
-                        const users = await reaction.users.fetch();
-                        participants = users
-                            .filter((user) => !user.bot)
-                            .map((user) => user.id);
-                    }
-
-                    if (participants.length === 0) {
-                        const endEmbed = new EmbedBuilder()
-                            .setTitle("GIVEAWAY ENDED")
-                            .setDescription(
-                                `No participants entered the giveaway for prize: \`${prize}\``
-                            )
-                            .setColor("DarkBlue");
-
-                        await channel.send({
-                            content: "<@&967418794807033906>",
-                            allowedMentions: { parse: ["roles"] },
-                            embeds: [endEmbed],
-                        });
-                    } else {
-                        const winners = selectRandomWinners(
-                            participants,
-                            winnerCount
-                        );
-                        const winnersString = winners
-                            .map((winnerId) => `<@${winnerId}>`)
-                            .join(", ");
-
-                        const endEmbed = new EmbedBuilder()
-                            .setTitle("GIVEAWAY ENDED")
-                            .setDescription(
-                                `Prize: \`${prize}\`\n\nWinners: ${winnersString}`
-                            )
-                            .setColor("Green");
-
-                        await channel.send({
-                            content: "<@&967418794807033906>",
-                            allowedMentions: { parse: ["roles"] },
-                            embeds: [endEmbed],
-                        });
-                    }
-
-                    await deleteGiveaway(channelId, messageId);
-                    console.log(`Deleted ended giveaway: ${messageId}`);
-                } catch (error) {
-                    console.error(
-                        `Error handling giveaway end for message ID ${messageId}:`,
-                        error
-                    );
-                }
+                await handleGiveawayEnd(channel, messageId, prize, winnerCount);
             }, timeLeft);
         }
         console.log("On-going giveaways has been initialized");
     } catch (error) {
         console.error("Error initializing giveaway timeouts:", error);
+    }
+}
+
+export function createUtcDate(
+    days: number,
+    hours: number,
+    minutes: number
+): Date {
+    const now = new Date();
+    // Calculate the total milliseconds to add to the current date
+    const totalMilliseconds =
+        days * 24 * 60 * 60 * 1000 + // Convert days to milliseconds
+        hours * 60 * 60 * 1000 + // Convert hours to milliseconds
+        minutes * 60 * 1000; // Convert minutes to milliseconds
+
+    return new Date(now.getTime() + totalMilliseconds); // Create the new date in UTC
+}
+
+async function handleGiveawayEnd(
+    channel: TextChannel,
+    messageId: string,
+    prize: string,
+    winnerCount: number
+) {
+    try {
+        const message = await channel.messages.fetch(messageId);
+        if (!message) {
+            console.error(`Message with ID ${messageId} not found.`);
+            await deleteGiveaway(channel.id, messageId);
+            return;
+        }
+
+        // Fetch all reactions to find participants
+        const reaction = message.reactions.cache.get("🎉");
+        let participants: string[] = [];
+
+        if (reaction) {
+            const users = await reaction.users.fetch();
+            participants = users
+                .filter((user) => !user.bot)
+                .map((user) => user.id);
+        }
+
+        if (participants.length === 0) {
+            const endEmbed = new EmbedBuilder()
+                .setTitle("GIVEAWAY ENDED")
+                .setDescription(
+                    `No participants entered the giveaway for prize: \`${prize}\``
+                )
+                .setColor("DarkBlue");
+
+            await channel.send({
+                content: "<@&967418794807033906>",
+                allowedMentions: { parse: ["roles"] },
+                embeds: [endEmbed],
+            });
+        } else {
+            const winners = selectRandomWinners(participants, winnerCount);
+            const winnersString = winners
+                .map((winnerId) => `<@${winnerId}>`)
+                .join(", ");
+
+            const endEmbed = new EmbedBuilder()
+                .setTitle("GIVEAWAY ENDED")
+                .setDescription(
+                    `Prize: \`${prize}\`\n\nWinners: ${winnersString}`
+                )
+                .setColor("Green");
+
+            await channel.send({
+                content: "<@&967418794807033906>",
+                allowedMentions: { parse: ["roles"] },
+                embeds: [endEmbed],
+            });
+        }
+
+        await deleteGiveaway(channel.id, messageId);
+        console.log(`Deleted ended giveaway: ${messageId}`);
+    } catch (error) {
+        console.error(
+            `Error handling giveaway end for message ID ${messageId}:`,
+            error
+        );
     }
 }
 
@@ -143,9 +151,12 @@ export async function setGiveaway(
     messageId: string,
     prize: string,
     winnerCount: number,
-    deadline: Date
+    days: number,
+    hours: number,
+    minutes: number
 ) {
     try {
+        const deadline = createUtcDate(days, hours, minutes); // Create the deadline in UTC
         const giveaway = new Giveaway({
             channelId,
             messageId,
