@@ -23,6 +23,7 @@ export function startBot() {
             GatewayIntentBits.GuildMembers,
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.MessageContent,
+            GatewayIntentBits.GuildMessageReactions,
         ],
     }) as CustomClient;
 
@@ -58,14 +59,16 @@ export function startBot() {
 
     for (const file of eventFiles) {
         const filePath = path.join(eventsPath, file);
-        const event = require(filePath);
-        if (event.default.once) {
-            client.once(event.default.name, (...args) =>
-                event.default.execute(...args)
-            );
+        const event = require(filePath).default;
+        if (event) {
+            if (event.once) {
+                client.once(event.name, (...args) => event.execute(...args));
+            } else {
+                client.on(event.name, (...args) => event.execute(...args));
+            }
         } else {
-            client.on(event.default.name, (...args) =>
-                event.default.execute(...args)
+            console.error(
+                `Failed to load event from ${filePath}: No default export found.`
             );
         }
     }

@@ -2,6 +2,7 @@ import { Client, Events } from "discord.js";
 import deployCommands from "../deploy-commands";
 import { initializeVerificationCollector } from "../modules/Verification";
 import { initializeGiveawayTimeouts } from "../modules/Giveaway";
+import { initializeReactionRoles } from "../modules/ReactRole";
 
 // event handler for making bot online
 export default {
@@ -18,5 +19,6 @@ export default {
 
         await initializeVerificationCollector(client);
         await initializeGiveawayTimeouts(client);
+        await initializeReactionRoles(client);
     },
 };
