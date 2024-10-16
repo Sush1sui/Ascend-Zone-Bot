@@ -108,11 +108,17 @@ export async function deleteReactRole(
             throw new Error("Role ID not found in the react roles");
         }
 
-        await ReactRole.findOneAndUpdate(
+        const deletedReactRole = await ReactRole.findOneAndUpdate(
             { channelId, messageId },
             { $pull: { reactRoles: { roleId } } },
             { new: true }
         );
+
+        if (!deletedReactRole) throw new Error("Couldn't delete react role");
+
+        if (deletedReactRole.reactRoles.length <= 0) {
+            await ReactRole.findOneAndDelete({ channelId, messageId });
+        }
 
         console.log(
             `Removed reaction role with role ID: ${roleId} from message ID: ${messageId}`
