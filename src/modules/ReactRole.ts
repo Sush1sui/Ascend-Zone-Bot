@@ -116,13 +116,22 @@ export async function deleteReactRole(
 
         if (!deletedReactRole) throw new Error("Couldn't delete react role");
 
-        if (deletedReactRole.reactRoles.length <= 0) {
-            await ReactRole.findOneAndDelete({ channelId, messageId });
+        const rolesCount: number = deletedReactRole.reactRoles.length;
+        if (rolesCount === 0) {
+            try {
+                await ReactRole.findOneAndDelete({ channelId, messageId });
+                console.log(
+                    `Deleted reactRole document for message ID: ${messageId}`
+                );
+            } catch (error) {
+                console.error("Error deleting document: ", error);
+            }
+        } else {
+            console.log(
+                `Removed reaction role with role ID: ${roleId} from message ID: ${messageId}`
+            );
         }
 
-        console.log(
-            `Removed reaction role with role ID: ${roleId} from message ID: ${messageId}`
-        );
         return reactRole;
     } catch (error) {
         console.error("Error deleting react role: ", error);
