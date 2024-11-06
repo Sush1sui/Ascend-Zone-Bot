@@ -1,4 +1,4 @@
-import { GuildMember, Message } from "discord.js";
+import { GuildMember, Message, TextChannel } from "discord.js";
 
 const staff_id = process.env.STAFF_ID;
 const booster_id = process.env.BOOSTER_ROLE_ID;
@@ -20,6 +20,8 @@ const CHANNEL_EXCEPTION = [
     "1140718990495326339",
 ];
 
+const CATEGORY_EXCEPTION = ["1169598672791670845"];
+
 export default {
     name: "messageCreate",
     once: false,
@@ -29,8 +31,18 @@ export default {
             if (
                 message.author.bot ||
                 CHANNEL_EXCEPTION.includes(message.channel.id)
-            )
+            ) {
                 return;
+            }
+
+            // Check if the message channel is a GuildText-based channel (not a DM or other channel type)
+            if (
+                message.channel instanceof TextChannel &&
+                message.channel.parentId &&
+                CATEGORY_EXCEPTION.includes(message.channel.parentId)
+            ) {
+                return;
+            }
 
             const member = message.member as GuildMember;
             if (!member) return;

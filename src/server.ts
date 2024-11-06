@@ -27,6 +27,8 @@ function pingBot() {
     attemptPing(); // Start the initial ping
 }
 
+
+
 export function startServer() {
     app.get("/", (_req, res) => res.send("Bot is running"));
 
